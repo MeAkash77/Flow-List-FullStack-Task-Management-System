@@ -1,13 +1,14 @@
 export type TodoPriority = "low" | "medium" | "high";
 
 export interface TodoItem {
-  id: number;
-  userId: string | number;
+  id: string;           // Change from number to string (UUID from database)
+  userId: string;       // Change to string only (UUID)
   task: string;
   category: string;
   completed: boolean;
   priority?: TodoPriority;
-  dueDate?: string;
+  dueDate?: string | null;
   notes?: string;
-  createdAt?: number;
+  createdAt?: number;   // This can stay as number (timestamp)
+  updatedAt?: number;
 }

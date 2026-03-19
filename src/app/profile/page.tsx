@@ -24,7 +24,7 @@ import {
   AccessTime,
   Refresh,
   Insights,
-  Timeline, // Fixed: Changed from TimelineIcon to Timeline
+  Timeline,
 } from "@mui/icons-material";
 import NavBar from "../components/NavBar";
 import { getAppTheme } from "../theme";
@@ -42,9 +42,12 @@ const startOfDay = (date: Date) =>
 export default function ProfilePage() {
   const [mounted, setMounted] = useState(false);
   const [todos, setTodos] = useState<TodoItem[]>([]);
-  const [user, setUser] = useState<{ id: string; username: string } | null>(
-    null,
-  );
+  // ✅ FIXED: Added email to user type
+  const [user, setUser] = useState<{ 
+    id: string; 
+    username: string; 
+    email?: string;
+  } | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -111,7 +114,7 @@ export default function ProfilePage() {
       setTodos(todosArray);
     } catch (err) {
       console.error("Error fetching todos:", err);
-      setTodos([]); // Reset to empty array on error
+      setTodos([]);
     } finally {
       if (showLoading) setLoading(false);
     }
@@ -137,7 +140,12 @@ export default function ProfilePage() {
       return;
     }
     
-    setUser(storedUser);
+    // ✅ Ensure user object includes email
+    setUser({
+      id: storedUser.id,
+      username: storedUser.username,
+      email: storedUser.email
+    });
     fetchTodos(storedUser.id, true);
   }, [router]);
 
@@ -188,7 +196,11 @@ export default function ProfilePage() {
     const todosArray = Array.isArray(todos) ? todos : [];
     return todosArray
       .slice()
-      .sort((a, b) => (b.createdAt ?? b.id ?? 0) - (a.createdAt ?? a.id ?? 0))
+      .sort((a, b) => {
+        const aCreated = a.createdAt ?? 0;
+        const bCreated = b.createdAt ?? 0;
+        return bCreated - aCreated;
+      })
       .slice(0, 6);
   }, [todos]);
 
@@ -671,7 +683,7 @@ export default function ProfilePage() {
                       spacing={1}
                       mb={2}
                     >
-                      <Timeline color="primary" /> {/* Fixed: Changed from TimelineIcon to Timeline */}
+                      <Timeline color="primary" />
                       <Typography variant="h6" fontWeight={700}>
                         Next 7 days
                       </Typography>

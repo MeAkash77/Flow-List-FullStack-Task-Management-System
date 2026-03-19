@@ -1,53 +1,50 @@
+import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { MongoClient } from "mongodb";
-
-// MongoDB configuration
-const uri = process.env.MONGO_DB_URI || "";
-const client = new MongoClient(uri);
-const dbName = "todo-nextjs-app";
-const collectionName = "users";
+import bcrypt from "bcryptjs";
 
 export async function POST(request: Request) {
-  const { username, newPassword } = await request.json();
-
-  if (!username || !newPassword) {
-    return NextResponse.json(
-      { error: "username and new password are required" },
-      { status: 400 },
-    );
-  }
-
   try {
-    await client.connect();
-    const db = client.db(dbName);
-    const usersCollection = db.collection(collectionName);
+    const { username, newPassword } = await request.json();
 
-    const user = await usersCollection.findOne({ username });
-
-    if (!user) {
+    // Validate input
+    if (!username || !newPassword) {
       return NextResponse.json(
-        { error: "Username not found" },
-        { status: 404 },
+        { error: "Username and new password are required" },
+        { status: 400 }
       );
     }
 
-    // Update the user's password
-    await usersCollection.updateOne(
-      { username },
-      { $set: { password: newPassword } },
-    );
+    // Find user by username
+    const user = await prisma.user.findUnique({
+      where: { username }
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update user's password
+    await prisma.user.update({
+      where: { username },
+      data: { password: hashedPassword }
+    });
 
     return NextResponse.json(
       { message: "Password reset successfully" },
-      { status: 200 },
+      { status: 200 }
     );
+
   } catch (error) {
     console.error("Error resetting password:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
-  } finally {
-    await client.close();
   }
 }

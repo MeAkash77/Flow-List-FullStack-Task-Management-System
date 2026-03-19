@@ -129,12 +129,19 @@ export default function Home() {
     localStorage.setItem("darkMode", JSON.stringify(next));
   };
 
-  const logout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("currentUser");
-    setUser(null);
-    router.push("/auth/login");
+  const logout = async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("currentUser");
+      setUser(null);
+      window.location.href = "/auth/login";
+    }
   };
 
   const fetchTodos = async (userId: string, showLoading = false) => {
@@ -147,6 +154,12 @@ export default function Home() {
           "Authorization": `Bearer ${accessToken}`
         }
       });
+      
+      if (response.status === 401 || response.status === 403) {
+        logout();
+        return;
+      }
+      
       const data = await response.json();
       
       // Ensure we always have an array
@@ -158,7 +171,7 @@ export default function Home() {
       }
     } catch (err) {
       console.error("Error fetching todos:", err);
-      setTodos([]); // Reset to empty array on error
+      setTodos([]);
     } finally {
       if (showLoading) setLoading(false);
     }
@@ -195,12 +208,6 @@ export default function Home() {
 
     setUser(storedUser);
     fetchTodos(storedUser.id, true);
-
-    // ✅ FIXED: REMOVED the auto-refresh interval that was causing blinking
-    // const interval = setInterval(() => fetchTodos(storedUser.id), 8000);
-    // return () => clearInterval(interval);
-    
-    // No cleanup needed now
   }, [router]);
 
   const addTodo = async () => {
@@ -232,7 +239,7 @@ export default function Home() {
         setPriority("medium");
         setDueDate("");
         setCategory("General");
-        await fetchTodos(user.id); // Refresh after adding
+        await fetchTodos(user.id);
         taskInputRef.current?.focus();
       }
     } catch (err) {
@@ -390,8 +397,10 @@ export default function Home() {
         if (sortBy === "category") {
           return a.category.localeCompare(b.category);
         }
-        const aCreated = a.createdAt ?? a.id;
-        const bCreated = b.createdAt ?? b.id;
+        
+        // ✅ FIXED: Use createdAt only for sorting, not id
+        const aCreated = a.createdAt ?? 0;
+        const bCreated = b.createdAt ?? 0;
         return bCreated - aCreated;
       });
 
@@ -467,7 +476,7 @@ export default function Home() {
       }
     : {};
 
-  const fieldBaseSx = mounted ? {
+  const fieldBaseSx = {
     "& .MuiOutlinedInput-root": {
       backgroundColor: isDarkMode ? "#1a2f26" : "#ffffff",
     },
@@ -490,7 +499,7 @@ export default function Home() {
     "& .MuiSvgIcon-root": {
       color: isDarkMode ? "#ffffff" : theme.palette.text.primary,
     },
-  } : {};
+  };
 
   // Show a simple loading state on first render
   if (!mounted) {

@@ -27,6 +27,7 @@ import NavBar from "@/app/components/NavBar";
 import { getAppTheme } from "@/app/theme";
 
 export default function ForgotPasswordPage() {
+  const [mounted, setMounted] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -35,14 +36,18 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [user, setUser] = useState<{ id: number; username: string } | null>(
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [user, setUser] = useState<{ id: string; username: string } | null>(
     null,
   );
 
   const router = useRouter();
-  const theme = useMemo(() => getAppTheme(isDarkMode), [isDarkMode]);
+  const theme = useMemo(() => 
+    mounted ? getAppTheme(isDarkMode) : getAppTheme(true), 
+    [isDarkMode, mounted]
+  );
 
+  // ✅ FIXED: Always define fieldBaseSx as a complete object, no conditional
   const fieldBaseSx = {
     "& .MuiOutlinedInput-root": {
       backgroundColor: isDarkMode ? "#1a2f26" : "#ffffff",
@@ -69,6 +74,8 @@ export default function ForgotPasswordPage() {
   };
 
   useEffect(() => {
+    setMounted(true);
+    
     const storedDarkMode = JSON.parse(
       localStorage.getItem("darkMode") || "true",
     );
@@ -77,7 +84,13 @@ export default function ForgotPasswordPage() {
     const storedUser = JSON.parse(
       localStorage.getItem("currentUser") || "null",
     );
-    if (storedUser) setUser(storedUser);
+    if (storedUser) {
+      // Ensure the user object has string ID
+      setUser({
+        id: storedUser.id.toString(),
+        username: storedUser.username
+      });
+    }
   }, []);
 
   const toggleDarkMode = () => {
@@ -86,10 +99,20 @@ export default function ForgotPasswordPage() {
     localStorage.setItem("darkMode", JSON.stringify(next));
   };
 
-  const logout = () => {
-    localStorage.removeItem("currentUser");
-    setUser(null);
-    router.push("/auth/login");
+  const logout = async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("currentUser");
+      setUser(null);
+      router.push("/auth/login");
+    }
   };
 
   const handleVerifyUsername = async () => {
@@ -128,6 +151,10 @@ export default function ForgotPasswordPage() {
       setError("Passwords do not match.");
       return;
     }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
     setIsLoading(true);
     setError("");
     try {
@@ -138,7 +165,7 @@ export default function ForgotPasswordPage() {
       });
       const data = await response.json();
       if (response.ok) {
-        alert("Password reset successful!");
+        alert("Password reset successful! Please login with your new password.");
         router.push("/auth/login");
       } else {
         setError(data.error || "Password reset failed.");
@@ -149,6 +176,20 @@ export default function ForgotPasswordPage() {
       setIsLoading(false);
     }
   };
+
+  if (!mounted) {
+    return (
+      <div style={{ 
+        minHeight: "100vh", 
+        display: "flex", 
+        alignItems: "center", 
+        justifyContent: "center",
+        fontFamily: "system-ui, -apple-system, sans-serif"
+      }}>
+        <div>Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -223,27 +264,43 @@ export default function ForgotPasswordPage() {
 
             <Stack spacing={2}>
               <TextField
+                id="username"
+                name="username"
                 label="Username"
                 fullWidth
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 sx={fieldBaseSx}
-                disabled={step === 2}
+                disabled={step === 2 || isLoading}
+                autoComplete="username"
+                inputProps={{
+                  'aria-label': 'username',
+                }}
               />
               {step === 2 && (
                 <>
                   <TextField
+                    id="new-password"
+                    name="newPassword"
                     label="New password"
                     type={showPassword ? "text" : "password"}
                     fullWidth
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     sx={fieldBaseSx}
+                    disabled={isLoading}
+                    autoComplete="new-password"
+                    inputProps={{
+                      'aria-label': 'new password',
+                      minLength: 6,
+                    }}
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position="end">
                           <IconButton
                             onClick={() => setShowPassword((prev) => !prev)}
+                            edge="end"
+                            aria-label="toggle password visibility"
                           >
                             {showPassword ? <VisibilityOff /> : <Visibility />}
                           </IconButton>
@@ -252,12 +309,20 @@ export default function ForgotPasswordPage() {
                     }}
                   />
                   <TextField
+                    id="confirm-password"
+                    name="confirmPassword"
                     label="Confirm password"
                     type={showConfirmPassword ? "text" : "password"}
                     fullWidth
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     sx={fieldBaseSx}
+                    disabled={isLoading}
+                    autoComplete="new-password"
+                    inputProps={{
+                      'aria-label': 'confirm password',
+                      minLength: 6,
+                    }}
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position="end">
@@ -265,6 +330,8 @@ export default function ForgotPasswordPage() {
                             onClick={() =>
                               setShowConfirmPassword((prev) => !prev)
                             }
+                            edge="end"
+                            aria-label="toggle confirm password visibility"
                           >
                             {showConfirmPassword ? (
                               <VisibilityOff />
@@ -285,20 +352,31 @@ export default function ForgotPasswordPage() {
                   step === 1 ? handleVerifyUsername : handleResetPassword
                 }
                 disabled={isLoading}
-                sx={{ color: "#ffffff" }}
+                size="large"
+                sx={{ 
+                  mt: 2,
+                  color: "#ffffff",
+                  '&:disabled': {
+                    opacity: 0.6
+                  }
+                }}
               >
-                {step === 1 ? "Verify username" : "Set new password"}
+                {isLoading ? "Processing..." : (step === 1 ? "Verify username" : "Set new password")}
               </Button>
             </Stack>
 
             <Stack
               direction="row"
               justifyContent="space-between"
-              mt={2}
+              mt={3}
               alignItems="center"
             >
-              <Link href="/auth/login">Back to login</Link>
-              <Link href="/auth/register">Create account</Link>
+              <Link href="/auth/login" style={{ color: theme.palette.primary.main }}>
+                Back to login
+              </Link>
+              <Link href="/auth/register" style={{ color: theme.palette.primary.main }}>
+                Create account
+              </Link>
             </Stack>
 
             {isLoading && <LinearProgress sx={{ mt: 2 }} />}

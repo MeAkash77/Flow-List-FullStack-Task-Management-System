@@ -38,7 +38,8 @@ export default function LoginPage() {
   // Only create theme after mounting to avoid hydration mismatch
   const theme = useMemo(() => mounted ? getAppTheme(isDarkMode) : getAppTheme(true), [isDarkMode, mounted]);
 
-  const fieldBaseSx = mounted ? {
+  // ✅ FIXED: Always define fieldBaseSx as a complete object, no conditional
+  const fieldBaseSx = {
     "& .MuiOutlinedInput-root": {
       backgroundColor: isDarkMode ? "#1a2f26" : "#ffffff",
     },
@@ -61,7 +62,7 @@ export default function LoginPage() {
     "& .MuiSvgIcon-root": {
       color: isDarkMode ? "#ffffff" : theme.palette.text.primary,
     },
-  } : {};
+  };
 
   const toggleDarkMode = () => {
     const next = !isDarkMode;
@@ -69,12 +70,20 @@ export default function LoginPage() {
     localStorage.setItem("darkMode", JSON.stringify(next));
   };
 
-  const logout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("currentUser");
-    setUser(null);
-    router.push("/auth/login");
+  const logout = async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("currentUser");
+      setUser(null);
+      router.push("/auth/login");
+    }
   };
 
   useEffect(() => {
@@ -117,9 +126,8 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
-        // 🔐 Store JWT tokens
+        // 🔐 Store ONLY access token in localStorage (refresh token is in HTTP-only cookie)
         localStorage.setItem("accessToken", data.accessToken);
-        localStorage.setItem("refreshToken", data.refreshToken);
         localStorage.setItem("currentUser", JSON.stringify(data.user));
         
         setUser(data.user);
@@ -320,4 +328,4 @@ export default function LoginPage() {
       </Box>
     </ThemeProvider>
   );
-}    
+}
