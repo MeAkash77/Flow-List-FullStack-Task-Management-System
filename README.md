@@ -33,6 +33,15 @@ This project shows the power of **Next.js** and serves as a practical demonstrat
 ## 🌟 **Features**
 
 - Full-stack application with Next.js for both frontend and backend
+- Secure Authentication — JWT + Refresh Token with HTTP-only cookies
+- Advanced Task Management — Create, update, delete, prioritize, and categorize tasks
+- Kanban Board (Drag & Drop) — Move tasks across Todo → In Progress → Done
+- Real-Time Sync — Live updates across multiple users using WebSockets
+- Analytics Dashboard — Track progress, completion rates, and productivity insights
+- Smart Filters & Search — Filter by priority, status, due date, and category
+- Due Dates & Priorities — Manage deadlines with visual indicators
+- Modern UI/UX — Responsive, animated interface with smooth interactions
+- Optimized Performance — SSR, API routes, and efficient state handling
 - Backend : Node.js + TypeScript + SQL + JWT + CRUD + pagination/filter/search
 - Frontend : Next.js + auth + dashboard + CRUD UI
 - Auth (JWT, refresh token)
