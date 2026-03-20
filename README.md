@@ -7,7 +7,6 @@ This project shows the power of **Next.js** and serves as a practical demonstrat
 
 
 ## 📝 **Assessment Compliance**
-This project fully complies with the Software Engineering Assessment requirements:
 
 - Full-stack application with Next.js for both frontend and backend
 - JWT Authentication	✅	Access Token + Refresh Token
