@@ -6,6 +6,36 @@ Welcome to **Flowlist**, a full-stack, lightweight, and simple to-do application
 This project shows the power of **Next.js** and serves as a practical demonstration of using Next.js as a complete full-stack framework, incorporating authentication, dark mode, and local storage for data persistence.
 
 ## Table of Contents
+## 🔐 Secure Authentication
+JWT + Refresh Token with HTTP-only cookies for maximum security. Includes bcrypt password hashing, protected API routes with middleware, session management, automatic token refresh, and CSRF protection.
+
+## 📋 Advanced Task Management
+Full CRUD operations for tasks with create, update, delete, prioritize, and categorize functionality. Set due dates with visual indicators, add notes, perform bulk operations, and track task completion.
+
+## 🧩 Kanban Board (Drag & Drop)
+Interactive Kanban board with drag-and-drop functionality to move tasks across Todo → In Progress → Done columns. Features visual status indicators, column-wise task organization, and smooth drag-and-drop animations.
+
+## ⚡ Real-Time Sync
+WebSocket integration with Socket.io providing live updates across multiple users simultaneously. Enjoy instant task sync without page refresh, real-time collaboration, and online/offline presence indicators.
+
+## 📊 Analytics Dashboard
+Track progress, completion rates, and productivity insights with interactive Recharts. Features productivity score with badges (Elite, Pro, Rising, Growing, Starter), weekly activity trends, priority distribution pie chart, category breakdown bar chart, 30-day completion trends, and AI-powered productivity predictions.
+
+## 🎯 Smart Filters & Search
+Filter tasks by priority (High/Medium/Low), status (Active/Completed), category, and due date (Today/This week/Overdue). Search by task title and notes with advanced search criteria and real-time filtering without page reload.
+
+## 📅 Due Dates & Priorities
+Set and manage deadlines with visual indicators including color-coded priority levels (Red = High, Orange = Medium, Green = Low). Features overdue task highlighting, due today reminders, calendar view for due dates, and priority-based sorting.
+
+## 🎨 Modern UI/UX
+Responsive design for all devices with beautiful animated landing page, Dark/Light mode with persistence, toast notifications for all actions, glass morphism design elements, floating particles animation, typewriter text effects, scroll reveal animations, skeleton loading states, and smooth transitions with micro-interactions.
+
+## 🚀 Optimized Performance
+Server-Side Rendering (SSR) for optimal loading, efficient API routes with caching, state management with React hooks, code splitting and lazy loading, image optimization, database query optimization with Prisma, and pagination for large datasets.
+
+
+
+
 
 - [🌟 **Features**](#-features)
 - [🚀 **Live Deployment**](#-live-deployment)
