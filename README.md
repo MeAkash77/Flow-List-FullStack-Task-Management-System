@@ -54,7 +54,7 @@ This project shows the power of **Next.js** and serves as a practical demonstrat
 
 ## 🚀 **Live Deployment**
 
-The application is deployed live on **Vercel**. You can access it at [https://todo-app-nextjs-stack.vercel.app/](https://todo-app-nextjs-stack.vercel.app/landing).
+The application is deployed live on **Vercel**. You can access it at [https://flow-list-full-stack-task-managemen-rosy.vercel.app/](https://flow-list-full-stack-task-managemen-rosy.vercel.app/).
 
 The app features a landing page, authentication (login, register, and forgot password), a to-do list, and a Swagger API documentation page, as well as real-time to-do updates using WebSockets.
 
@@ -302,7 +302,7 @@ The production build will be served at `http://localhost:3000`.
 
 3. **Manage To-Dos**: Access the main to-do list page (`/`) where you can add, edit, and delete to-dos, as well as toggle dark mode.
 
-Alternatively, you can directly access the deployed application at [https://todo-app-nextjs-stack.vercel.app/](https://todo-app-nextjs-stack.vercel.app/).
+Alternatively, you can directly access the deployed application at [https://flow-list-full-stack-task-managemen-rosy.vercel.app/](https://flow-list-full-stack-task-managemen-rosy.vercel.app/).
 
 ## 📝 **Swagger API Documentation**
 
@@ -413,7 +413,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## 📧 **Contact**
 
-For any inquiries or feedback, feel free to reach out to the author at `hoangson091104@gmail.com`.
+For any inquiries or feedback, feel free to reach out to the author at `iakshu845@gmail.com`.
 
 Enjoy using the **ToDo-App-Fullstack-NextJS**! 🎉
 
