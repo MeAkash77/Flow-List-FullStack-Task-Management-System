@@ -32,7 +32,7 @@ Responsive design for all devices with beautiful animated landing page, Dark/Lig
 ## Optimized Performance
 Server-Side Rendering (SSR) for optimal loading, efficient API routes with caching, state management with React hooks, code splitting and lazy loading, image optimization, database query optimization with Prisma, and pagination for large datasets.
 
-## 📅**Table of Contents**
+## 📅 **Table of Contents**
 
 - [🌟 **Features**](#-features)
 - [🚀 **Live Deployment**](#-live-deployment)
