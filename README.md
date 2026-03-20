@@ -5,7 +5,7 @@ Welcome to **Flowlist**, a full-stack, lightweight, and simple to-do application
 
 This project shows the power of **Next.js** and serves as a practical demonstration of using Next.js as a complete full-stack framework, incorporating authentication, dark mode, and local storage for data persistence.
 
-## Secure Authentication
+## 🔐 **Secure Authentication**
 JWT + Refresh Token with HTTP-only cookies for maximum security. Includes bcrypt password hashing, protected API routes with middleware, session management, automatic token refresh, and CSRF protection.
 
 ## Advanced Task Management
@@ -32,7 +32,7 @@ Responsive design for all devices with beautiful animated landing page, Dark/Lig
 ## Optimized Performance
 Server-Side Rendering (SSR) for optimal loading, efficient API routes with caching, state management with React hooks, code splitting and lazy loading, image optimization, database query optimization with Prisma, and pagination for large datasets.
 
-## Table of Contents
+## 📅**Table of Contents**
 
 - [🌟 **Features**](#-features)
 - [🚀 **Live Deployment**](#-live-deployment)
