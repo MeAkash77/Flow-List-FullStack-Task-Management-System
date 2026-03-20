@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -31,9 +31,11 @@ import {
   Logout as LogoutIcon,
   AppRegistration,
   Person,
+  Wifi,
+  WifiOff,
 } from "@mui/icons-material";
+import { socket } from "@/lib/socketClient";
 
-// ✅ FIXED: Changed id from number to string to match UUID from database
 interface NavBarProps {
   user: { id: string; username: string } | null;
   isDarkMode: boolean;
@@ -41,8 +43,10 @@ interface NavBarProps {
   onLogout: () => void;
 }
 
+// Navigation links with Board added
 const links = [
   { label: "Home", href: "/home" },
+  { label: "Board", href: "/board" }, // 👈 Board link for Kanban view
   { label: "Planner", href: "/planner" },
   { label: "Insights", href: "/insights" },
   { label: "Focus", href: "/focus" },
@@ -58,6 +62,24 @@ export default function NavBar({
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+  const [isConnected, setIsConnected] = useState(false);
+
+  // 🔥 Socket connection status
+  useEffect(() => {
+    const handleConnect = () => setIsConnected(true);
+    const handleDisconnect = () => setIsConnected(false);
+
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+    
+    // Check current connection status
+    setIsConnected(socket.connected);
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+    };
+  }, []);
 
   const isActive = (href: string) => pathname === href;
   const toggleDrawer = () => setMobileOpen((prev) => !prev);
@@ -247,6 +269,53 @@ export default function NavBar({
           gap={0.75}
           sx={{ ml: { xs: 0.35, md: 0.9 } }}
         >
+          {/* 🔥 Real-time connection indicator */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              mr: 1,
+              px: 1,
+              py: 0.5,
+              borderRadius: 2,
+              backgroundColor: isDarkMode
+                ? "rgba(0,0,0,0.2)"
+                : "rgba(255,255,255,0.1)",
+            }}
+          >
+            <Box
+              sx={{
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                bgcolor: isConnected ? "#4caf50" : "#f44336",
+                animation: isConnected ? "pulse 2s infinite" : "none",
+                "@keyframes pulse": {
+                  "0%": { opacity: 1, transform: "scale(1)" },
+                  "50%": { opacity: 0.5, transform: "scale(1.2)" },
+                  "100%": { opacity: 1, transform: "scale(1)" },
+                },
+              }}
+            />
+            <Typography
+              variant="caption"
+              sx={{
+                color: "#fff",
+                opacity: 0.9,
+                fontWeight: 500,
+                display: { xs: "none", sm: "block" },
+              }}
+            >
+              {isConnected ? "Live" : "Connecting..."}
+            </Typography>
+            {isConnected ? (
+              <Wifi sx={{ fontSize: 14, color: "#4caf50", ml: 0.5 }} />
+            ) : (
+              <WifiOff sx={{ fontSize: 14, color: "#f44336", ml: 0.5 }} />
+            )}
+          </Box>
+
           <IconButton color="inherit" onClick={toggleDarkMode}>
             {isDarkMode ? <Brightness7 /> : <Brightness4 />}
           </IconButton>
@@ -288,16 +357,6 @@ export default function NavBar({
                     <Person fontSize="small" />
                   </ListItemIcon>
                   Profile
-                </MenuItem>
-                <MenuItem
-                  component={Link}
-                  href="/auth/register"
-                  onClick={closeMenu}
-                >
-                  <ListItemIcon>
-                    <AppRegistration fontSize="small" />
-                  </ListItemIcon>
-                  Register
                 </MenuItem>
                 <MenuItem
                   onClick={() => {

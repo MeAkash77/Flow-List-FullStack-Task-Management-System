@@ -1,0 +1,15 @@
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(0px); }
+}
+
+.board-card {
+  animation: float 3s ease-in-out infinite;
+}
+
+.drag-overlay {
+  box-shadow: 0 20px 30px rgba(0, 0, 0, 0.3);
+  transform: rotate(2deg) scale(1.05);
+  transition: all 0.2s ease;
+}

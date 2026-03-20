@@ -77,15 +77,22 @@ export default function PlannerPage() {
     localStorage.setItem("darkMode", JSON.stringify(next));
   };
 
-  const logout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("currentUser");
-    setUser(null);
-    router.push("/auth/login");
+  const logout = async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("currentUser");
+      setUser(null);
+      window.location.href = "/auth/login";
+    }
   };
 
-  // ✅ FIXED: Safe fetchTodos function
+  // ✅ FIXED: Handle paginated API response
   const fetchTodos = async (userId: string, showLoading = false) => {
     if (showLoading) setLoading(true);
     try {
@@ -97,12 +104,25 @@ export default function PlannerPage() {
       });
       const data = await response.json();
       
-      // Ensure we always have an array
-      const todosArray = Array.isArray(data) ? data : [];
+      // ✅ Handle paginated response format
+      let todosArray: TodoItem[] = [];
+      
+      if (Array.isArray(data)) {
+        // Old format: direct array of tasks
+        todosArray = data;
+      } else if (data.tasks && Array.isArray(data.tasks)) {
+        // New paginated format: { tasks: [], pagination: {...} }
+        todosArray = data.tasks;
+      } else {
+        // Fallback for any other format
+        todosArray = [];
+      }
+      
+      console.log("Planner page - fetched tasks:", todosArray.length);
       setTodos(todosArray);
     } catch (err) {
       console.error("Error fetching todos:", err);
-      setTodos([]); // Reset to empty array on error
+      setTodos([]);
     } finally {
       if (showLoading) setLoading(false);
     }
@@ -134,7 +154,6 @@ export default function PlannerPage() {
 
   // ✅ FIXED: Safe week plan with array check
   const weekPlan = useMemo(() => {
-    // Ensure todos is an array
     const todosArray = Array.isArray(todos) ? todos : [];
     
     const start = startOfDay(new Date());

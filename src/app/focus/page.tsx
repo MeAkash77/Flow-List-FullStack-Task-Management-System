@@ -104,6 +104,7 @@ export default function FocusPage() {
     }
   };
 
+  // ✅ FIXED: Handle paginated API response
   const fetchTodos = async (userId: string, showLoading = false) => {
     if (showLoading) setLoading(true);
     try {
@@ -115,8 +116,21 @@ export default function FocusPage() {
       });
       const data = await response.json();
       
-      // Ensure we always have an array
-      const todosArray = Array.isArray(data) ? data : [];
+      // ✅ Handle paginated response format
+      let todosArray: TodoItem[] = [];
+      
+      if (Array.isArray(data)) {
+        // Old format: direct array of tasks
+        todosArray = data;
+      } else if (data.tasks && Array.isArray(data.tasks)) {
+        // New paginated format: { tasks: [], pagination: {...} }
+        todosArray = data.tasks;
+      } else {
+        // Fallback for any other format
+        todosArray = [];
+      }
+      
+      console.log("Focus page - fetched tasks:", todosArray.length);
       setTodos(todosArray);
     } catch (err) {
       console.error("Error fetching todos:", err);

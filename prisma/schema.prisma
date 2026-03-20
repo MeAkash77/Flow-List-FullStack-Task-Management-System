@@ -1,3 +1,5 @@
+// prisma/schema.prisma
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -23,6 +25,7 @@ model Task {
   title     String
   category  String   @default("General")
   priority  String   @default("medium")
+  status    String   @default("todo") // NEW: todo, in-progress, done
   dueDate   String?
   notes     String?
   completed Boolean  @default(false)
@@ -32,4 +35,5 @@ model Task {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@index([status]) // Add index for faster queries by status
 }

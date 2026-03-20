@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+// ✅ Correct path for your file location
+import ToastProvider from "@/app/components/ToastProvider";import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/react";
 import localFont from "next/font/local";
 import AppFooter from "./components/AppFooter";
@@ -64,6 +65,7 @@ export default function RootLayout({
         <meta property="og:locale" content="en_US" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <ToastProvider />
         <Analytics />
         {children}
         <AppFooter />

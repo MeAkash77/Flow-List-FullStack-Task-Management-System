@@ -1,5 +1,6 @@
 "use client";
 
+import toast from "react-hot-toast";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import isEqual from "lodash/isEqual";
@@ -144,6 +145,7 @@ export default function Home() {
     }
   };
 
+  // ✅ FIXED: Handle paginated response format
   const fetchTodos = async (userId: string, showLoading = false) => {
     if (showLoading) setLoading(true);
 
@@ -162,8 +164,19 @@ export default function Home() {
       
       const data = await response.json();
       
-      // Ensure we always have an array
-      const todosArray = Array.isArray(data) ? data : [];
+      // Handle both array and paginated object responses
+      let todosArray: TodoItem[] = [];
+      
+      if (Array.isArray(data)) {
+        // Old format: array of tasks
+        todosArray = data;
+      } else if (data.tasks && Array.isArray(data.tasks)) {
+        // New format with pagination: { tasks: [], pagination: {...} }
+        todosArray = data.tasks;
+      } else {
+        // Fallback to empty array
+        todosArray = [];
+      }
       
       if (!isEqual(todosArray, todosRef.current)) {
         todosRef.current = todosArray;
@@ -210,9 +223,12 @@ export default function Home() {
     fetchTodos(storedUser.id, true);
   }, [router]);
 
+  // ✅ UPDATED: Add Todo with toast
   const addTodo = async () => {
     if (!task.trim() || !user) return;
     setSaving(true);
+
+    const loadingToast = toast.loading("Creating task...");
 
     try {
       const accessToken = localStorage.getItem("accessToken");
@@ -234,6 +250,7 @@ export default function Home() {
       });
 
       if (response.ok) {
+        toast.success("Task created successfully!", { id: loadingToast });
         setTask("");
         setNotes("");
         setPriority("medium");
@@ -241,17 +258,24 @@ export default function Home() {
         setCategory("General");
         await fetchTodos(user.id);
         taskInputRef.current?.focus();
+      } else {
+        toast.error("Failed to create task", { id: loadingToast });
       }
     } catch (err) {
       console.error("Error adding todo:", err);
+      toast.error("Something went wrong", { id: loadingToast });
     } finally {
       setSaving(false);
     }
   };
 
+  // ✅ UPDATED: Toggle Completion with toast
   const toggleCompletion = async (todoId: string) => {
     if (!user) return;
     setSaving(true);
+    
+    const loadingToast = toast.loading("Updating task...");
+    
     try {
       const accessToken = localStorage.getItem("accessToken");
       const response = await fetch(`/api/todos`, {
@@ -266,17 +290,28 @@ export default function Home() {
           completed: !todos.find((t) => t.id === todoId)?.completed,
         }),
       });
-      if (response.ok) await fetchTodos(user.id);
+      
+      if (response.ok) {
+        toast.success("Task updated!", { id: loadingToast });
+        await fetchTodos(user.id);
+      } else {
+        toast.error("Update failed", { id: loadingToast });
+      }
     } catch (err) {
       console.error("Error toggling completion:", err);
+      toast.error("Something went wrong", { id: loadingToast });
     } finally {
       setSaving(false);
     }
   };
 
+  // ✅ UPDATED: Delete Todo with toast
   const deleteTodo = async (todoId: string) => {
     if (!user) return;
     setSaving(true);
+    
+    const loadingToast = toast.loading("Deleting task...");
+    
     try {
       const accessToken = localStorage.getItem("accessToken");
       const response = await fetch(`/api/todos`, {
@@ -290,17 +325,28 @@ export default function Home() {
           todoId,
         }),
       });
-      if (response.ok) await fetchTodos(user.id);
+      
+      if (response.ok) {
+        toast.success("Task deleted!", { id: loadingToast });
+        await fetchTodos(user.id);
+      } else {
+        toast.error("Delete failed", { id: loadingToast });
+      }
     } catch (err) {
       console.error("Error deleting todo:", err);
+      toast.error("Something went wrong", { id: loadingToast });
     } finally {
       setSaving(false);
     }
   };
 
+  // ✅ UPDATED: Save Edit with toast
   const saveEdit = async () => {
     if (!editingTodo || !user) return;
     setSaving(true);
+    
+    const loadingToast = toast.loading("Saving changes...");
+    
     try {
       const accessToken = localStorage.getItem("accessToken");
       const response = await fetch(`/api/todos`, {
@@ -322,12 +368,16 @@ export default function Home() {
       });
 
       if (response.ok) {
+        toast.success("Changes saved!", { id: loadingToast });
         await fetchTodos(user.id);
         setEditOpen(false);
         setEditingTodo(null);
+      } else {
+        toast.error("Save failed", { id: loadingToast });
       }
     } catch (err) {
       console.error("Error updating todo:", err);
+      toast.error("Something went wrong", { id: loadingToast });
     } finally {
       setSaving(false);
     }
@@ -398,7 +448,6 @@ export default function Home() {
           return a.category.localeCompare(b.category);
         }
         
-        // ✅ FIXED: Use createdAt only for sorting, not id
         const aCreated = a.createdAt ?? 0;
         const bCreated = b.createdAt ?? 0;
         return bCreated - aCreated;
